@@ -6,21 +6,27 @@ import generateToken from '../utils/generateToken.js';
 // @route  POST /api/users/auth
 // @access Public
 const authUser = asyncHandler(async (req, res) => {
-  // const { username, password } = req.body;
+  const { email, password } = req.body;
 
-  // console.log('Username:', username, 'Password:', password);
+  const user = await User.findOne({ email });
+
+  if (user && (await user.matchPassword(password))) {
+    // Generate a token and set it in the cookie
+    generateToken(res, user._id);
+
+    res.status(201).json({
+      _id: user._id,
+      name: user.name,
+      email: user.email,
+    });
+  } else {
+    res.status(401);
+    throw new Error('Invalid email or password');
+  }
 
   res
     .status(200)
     .json({ message: 'User authenticated successfully' });
-  //   const { username, password } = req.body;
-  //   if (username && password) {
-  //     res
-  //       .status(200)
-  //       .json({ message: 'User authenticated successfully' });
-  //   } else {
-  //     res.status(400).json({ message: 'Invalid credentials' });
-  //   }
 });
 
 // @desc   Register a new user
@@ -64,8 +70,14 @@ const registerUser = asyncHandler(async (req, res) => {
 // @route  POST /api/users/logout
 // @access Public
 const logoutUser = asyncHandler(async (req, res) => {
+  // Clear the cookie by setting its expiration date to the past
+  res.cookie('jwt', '', {
+    httpOnly: true,
+    expires: new Date(0),
+  });
+
   res.status(200).json({
-    message: 'Logout User',
+    message: 'User logged out successfully',
   });
 });
 
