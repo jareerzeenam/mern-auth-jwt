@@ -1,5 +1,6 @@
 import express from 'express';
 import dotenv from 'dotenv';
+import cookieParser from 'cookie-parser';
 import userRoutes from './routes/userRoutes.js';
 import {
   notFound,
@@ -16,6 +17,7 @@ const app = express();
 
 app.use(express.json()); // for parsing application/json
 app.use(express.urlencoded({ extended: true })); // for parsing application/x-www-form-urlencoded
+app.use(cookieParser()); // for parsing cookies
 
 app.use('/api/users', userRoutes);
 
